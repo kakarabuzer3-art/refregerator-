@@ -7,7 +7,8 @@ export function CollectionsPreview() {
   return (
     <Section
       id="collections"
-      title="Find your fit"
+      deferRender
+      title={<>Find your <span className="accent-serif">fit</span></>}
       intro="Four collections, from wide American style to compact under-counter. Start with the space you have."
     >
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

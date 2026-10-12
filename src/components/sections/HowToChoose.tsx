@@ -31,7 +31,8 @@ export function HowToChoose() {
   return (
     <Section
       id="how-to-choose"
-      title="Choosing is simple"
+      deferRender
+      title={<>Choosing is <span className="accent-serif">simple</span></>}
       intro="Three steps from not sure to sorted."
     >
       <ol className="grid gap-5 md:grid-cols-3">

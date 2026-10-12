@@ -6,7 +6,8 @@ export function FeaturesPreview() {
   return (
     <Section
       id="technology"
-      title="Cooling, engineered quietly"
+      deferRender
+      title={<>Cooling, engineered <span className="accent-serif">quietly</span></>}
       intro="The details behind the door that keep food fresh and bills low."
     >
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -11,7 +11,7 @@ export function DealerBand() {
             id="dealer-band-title"
             className="text-3xl font-light tracking-tight text-white md:text-4xl"
           >
-            See it in person
+            See it <span className="accent-serif">in person</span>
           </h2>
           <p className="mt-3 max-w-xl text-lg text-[var(--ink-soft)]">
             Visit a stockist near you, or ask us anything before you decide.

@@ -40,3 +40,17 @@ The workspace's egress policy blocks `registry.npmjs.org`, so `npm install`, `ne
 - `tsc` ran, but only reported missing `react`/`node`/`next` type packages (cascading errors), so it proves nothing about the code.
 
 Run locally: `npm install && npm run typecheck && npm run lint && npm run build`.
+
+## Background themes (added later)
+
+Four selectable page backgrounds: Graphite (original, default), Midnight gold, Violet, Coral and sage. Only the background changes; sections, cards and buttons are untouched.
+
+| Decision | Why |
+|---|---|
+| Patterns ported to plain CSS in `src/app/themes.css`, selected by `html[data-theme]`, not `styled-components` | Same pixels, no new dependency, no client-side CSS-in-JS, and the fixed `.site-bg` layer is still painted once. |
+| Tinted scrim (`.site-bg::after`) on the three bright themes | Without it white text sits at contrast 1.0 to 1.3 on the light tiles (needs 4.5). Alphas 0.57 to 0.66 are the smallest that reach 4.5:1 on the brightest tile. Re-check if pattern colours change. |
+| Tiny inline script in `<head>` (`themeInitScript`) plus `suppressHydrationWarning` on `<html>` | Applies the saved theme before first paint so the default never flashes. This is the one place an inline script is used. |
+| `ThemeSwitcher` is a client leaf using `useSyncExternalStore` | Server and client first render agree, and the label updates instantly. localStorage access is wrapped in try/catch. |
+| Theme registry in `src/lib/themes.ts` | One list drives the switcher, the swatches and the init script. Adding a theme = one entry plus one CSS block. |
+
+Measured (Chromium render of each pattern with its scrim, brightest pixel): body text, accent blue and champagne gold all reach at least 4.6:1 on every theme, white text at least 7.1:1. The footer has extra bottom padding so the floating theme button never covers the "Back to top" link.

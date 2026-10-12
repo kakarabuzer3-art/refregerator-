@@ -18,7 +18,8 @@ export function FeaturedProducts() {
   return (
     <Section
       id="featured"
-      title="Popular models"
+      deferRender
+      title={<>Popular <span className="accent-serif">models</span></>}
       intro="A good place to start if you are not sure what you need."
     >
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

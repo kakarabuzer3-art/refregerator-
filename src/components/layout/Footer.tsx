@@ -4,7 +4,7 @@ import { business, footerGroups, site } from "@/lib/site";
 /** Site footer, rendered on every page from the root layout. */
 export function Footer() {
   return (
-    <footer className="px-4 pb-6 pt-10 sm:px-6">
+    <footer className="px-4 pb-24 pt-10 sm:px-6">
       <div className="glass mx-auto max-w-7xl rounded-3xl p-6 md:p-10">
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>

@@ -9,7 +9,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6">
-      <div className="glass mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-full py-2 pl-6 pr-2">
+      <div className="glass glass-blur mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-full py-2 pl-6 pr-2">
         <Link
           href="/"
           className="text-base font-semibold tracking-wide"

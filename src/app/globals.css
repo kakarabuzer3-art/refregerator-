@@ -10,25 +10,27 @@
   --pattern-c2: #4e4f51;
   --pattern-c3: #3c3c3c;
 
-  /* Glassmorphism. Blur is kept low so the pattern stays visible through it. */
-  --glass-bg: rgb(22 22 24 / 0.58);
-  --glass-bg-hover: rgb(46 46 50 / 0.62);
+  /* Glassmorphism. Blur is only ~15% of the first version (12px -> 2px,
+     16px -> 2.4px) so the pattern stays clearly visible through the glass,
+     and it is used on few surfaces only (see "Glass surfaces" below). */
+  --glass-bg: rgb(24 24 27 / 0.64);
+  --glass-bg-hover: rgb(48 48 53 / 0.7);
   --glass-bg-active: rgb(255 255 255 / 0.16);
   --glass-border: rgb(255 255 255 / 0.2);
   --glass-highlight: rgb(255 255 255 / 0.32);
-  --glass-blur: 12px;
-  --glass-blur-active: 16px;
+  --glass-blur: 2px;
+  --glass-blur-active: 2.4px;
 
-  --accent: #9bd7ff;
+  --accent: #9bd7ff; /* ice blue: cold, clean, trustworthy */
+  --gold: #e6cf9f; /* champagne: premium, aspirational (used sparingly) */
   --ink: #f5f5f6;
   --ink-soft: #d4d4d8;
 }
 
 @media (max-width: 639px) {
   :root {
-    /* Backdrop blur is GPU-heavy on phones, so use less of it. */
-    --glass-blur: 8px;
-    --glass-blur-active: 10px;
+    --glass-blur: 1px;
+    --glass-blur-active: 1.5px;
   }
 }
 
@@ -42,8 +44,12 @@
    ------------------------------------------------------------------ */
 html {
   color-scheme: dark;
-  scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -51,6 +57,11 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgb(155 215 255 / 0.35);
 }
 
 /* Fixed pattern layer: it is its own compositor layer, so scrolling never
@@ -60,6 +71,7 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  contain: strict;
   background:
     repeating-conic-gradient(
         from 30deg,
@@ -97,38 +109,53 @@ body {
   transform: translateY(0);
 }
 
+/* Premium type accent: italic serif, champagne colour. */
+.accent-serif {
+  font-family: var(--font-display, Georgia), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: -0.01em;
+}
+
 /* ------------------------------------------------------------------
    Glass surfaces
+
+   Speed rule: backdrop-filter is the expensive part of glassmorphism, and
+   it is re-computed over the whole background on every scroll frame. So
+   ordinary surfaces (.glass) are translucent tint + border + highlight
+   only. Real blur is reserved for the header, the menu sheet and elements
+   that are pressed, open or current, which is exactly when the background
+   should show through "a little blurred".
    ------------------------------------------------------------------ */
 .glass {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
-    0 10px 30px rgb(0 0 0 / 0.35);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    0 8px 24px rgb(0 0 0 / 0.28);
 }
 
-/* No backdrop-filter support: fall back to a solid, still-legible surface. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass {
-    background: rgb(30 30 33 / 0.94);
-  }
+.glass-blur,
+.glass-sheet {
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
 }
 
-/* Interactive glass: highlights on hover/focus and gets a clearer, slightly
-   stronger blur while pressed, open or current, so the pattern shows through. */
+/* Interactive glass: lifts and brightens on hover, and shows a light blur
+   with an accent border while pressed, open or current. */
 .glass-interactive {
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
-.glass-interactive:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-highlight);
+@media (hover: hover) {
+  .glass-interactive:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-highlight);
+    transform: translateY(-2px);
+  }
 }
 .glass-interactive:active,
 .glass-interactive[aria-expanded="true"],
@@ -140,20 +167,38 @@ body {
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     0 0 0 1px rgb(155 215 255 / 0.35),
-    0 12px 36px rgb(0 0 0 / 0.4);
-  -webkit-backdrop-filter: blur(var(--glass-blur-active)) saturate(160%);
-  backdrop-filter: blur(var(--glass-blur-active)) saturate(160%);
+    0 8px 24px rgb(0 0 0 / 0.32);
+  -webkit-backdrop-filter: blur(var(--glass-blur-active));
+  backdrop-filter: blur(var(--glass-blur-active));
 }
 .glass-interactive:active {
   transform: translateY(1px) scale(0.99);
 }
 
+/* Primary call to action: the one bright, solid element on the page, so the
+   eye goes to it first (isolation effect). Secondary actions stay glass. */
 .glass-primary {
-  background: rgb(155 215 255 / 0.18);
-  border-color: rgb(155 215 255 / 0.55);
+  color: #07202f;
+  background: linear-gradient(135deg, #f4fbff 0%, #a9dcff 100%);
+  border-color: rgb(255 255 255 / 0.75);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 6px 20px rgb(155 215 255 / 0.3);
+}
+.glass-interactive.glass-primary:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #c4e9ff 100%);
+  border-color: #fff;
+}
+.glass-interactive.glass-primary:active,
+.glass-interactive.glass-primary[aria-expanded="true"] {
+  background: linear-gradient(135deg, #d3efff 0%, #8fd0fb 100%);
+  border-color: #fff;
+  box-shadow: 0 2px 10px rgb(155 215 255 / 0.4);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
-/* Off-canvas menu (native <dialog>): the page behind it stays visible, blurred. */
+/* Off-canvas menu (native <dialog>): the page behind it stays visible, lightly blurred. */
 .glass-sheet {
   margin: 0 0 0 auto;
   padding: 0;
@@ -165,14 +210,14 @@ body {
   border-radius: 1.5rem 0 0 1.5rem;
 }
 .glass-sheet::backdrop {
-  background: rgb(0 0 0 / 0.28);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
+  background: rgb(0 0 0 / 0.32);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .glass-sheet[open] {
-    animation: sheet-in 0.25s ease-out;
+    animation: sheet-in 0.2s ease-out;
   }
   @keyframes sheet-in {
     from {
@@ -187,26 +232,53 @@ body {
 }
 
 /* ------------------------------------------------------------------
-   Hero
+   Rendering budget helpers
    ------------------------------------------------------------------ */
-.hero-track {
-  position: relative;
+/* Skip layout and paint of home-page sections until they near the viewport. */
+.defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
 }
-@media (min-width: 768px) {
-  /* Extra scroll distance lets the door open while the stage stays pinned. */
-  .hero-track {
-    height: 170svh;
-  }
-  .hero-stage {
-    position: sticky;
-    top: 0;
-    height: 100svh;
+
+/* Section fades up as it enters (compositor-only: opacity + transform). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-up linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 28%;
+    }
+    @keyframes reveal-up {
+      from {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
   }
 }
 
-/* CSS-drawn refrigerator: no image request, so the LCP element is the headline. */
+/* ------------------------------------------------------------------
+   Hero: refrigerator that opens when the page loads (curiosity: what is inside?)
+   ------------------------------------------------------------------ */
 .fridge-scene {
+  position: relative;
   perspective: 1400px;
+}
+/* Cold glow behind the product (a plain gradient: no blur filter). */
+.fridge-scene::before {
+  content: "";
+  position: absolute;
+  inset: -8% -22%;
+  background: radial-gradient(
+    closest-side,
+    rgb(155 215 255 / 0.3),
+    transparent 72%
+  );
+  pointer-events: none;
 }
 .fridge {
   position: relative;
@@ -215,7 +287,7 @@ body {
   border-radius: 1.25rem;
   background: linear-gradient(145deg, #2b2c2f, #0f1011);
   box-shadow:
-    0 30px 60px rgb(0 0 0 / 0.55),
+    0 24px 40px rgb(0 0 0 / 0.45),
     inset 0 0 0 1px rgb(255 255 255 / 0.08);
 }
 .fridge-interior {
@@ -236,7 +308,7 @@ body {
   inset: 0;
   border-radius: 1.25rem;
   transform-origin: left center;
-  transform: rotateY(-24deg); /* static pose: slightly ajar */
+  transform: rotateY(-24deg); /* static pose (reduced motion): slightly ajar */
   background: linear-gradient(
     115deg,
     #d9dadd 0%,
@@ -246,6 +318,19 @@ body {
   );
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.35);
   backface-visibility: hidden;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fridge-door {
+    animation: door-open 1.6s cubic-bezier(0.22, 0.8, 0.24, 1) 0.35s both;
+  }
+  @keyframes door-open {
+    from {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(-62deg);
+    }
+  }
 }
 .fridge-handle {
   position: absolute;
@@ -281,7 +366,7 @@ body {
     var(--finish-b, #8e9096) 100%
   );
   box-shadow:
-    0 20px 40px rgb(0 0 0 / 0.5),
+    0 14px 24px rgb(0 0 0 / 0.4),
     inset 0 0 0 1px rgb(255 255 255 / 0.25);
   transition: background 0.3s ease;
 }
@@ -321,7 +406,7 @@ body {
   --pv-h: 14rem;
 }
 
-/* FAQ accordion indicator */
+/* FAQ accordion indicator (the open item highlights via .glass-interactive[open]) */
 .faq summary {
   list-style: none;
 }
@@ -336,48 +421,6 @@ body {
 }
 .faq[open] summary::after {
   content: "\2013";
-}
-
-/* Open FAQ item: same highlight language as pressed glass buttons. */
-.faq[open] {
-  background: var(--glass-bg-active);
-  border-color: var(--accent);
-  -webkit-backdrop-filter: blur(var(--glass-blur-active)) saturate(160%);
-  backdrop-filter: blur(var(--glass-blur-active)) saturate(160%);
-}
-
-/* Scroll-driven animation: progressive enhancement only (hero only). */
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .hero-stage .fridge-door {
-      animation: door-open linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0 70svh;
-    }
-    .hero-copy {
-      animation: copy-drift linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0 70svh;
-    }
-    @keyframes door-open {
-      from {
-        transform: rotateY(0deg);
-      }
-      to {
-        transform: rotateY(-78deg);
-      }
-    }
-    @keyframes copy-drift {
-      from {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(-2rem);
-        opacity: 0.85;
-      }
-    }
-  }
 }
 
 /* ------------------------------------------------------------------
@@ -415,7 +458,7 @@ textarea.glass-field {
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .reveal-word {
-      animation: word-in linear both;
+      animation: word-in linear backwards;
       animation-timeline: view();
       animation-range: entry calc(var(--i) * 2%) entry calc(45% + var(--i) * 2%);
     }

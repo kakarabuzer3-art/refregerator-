@@ -5,7 +5,11 @@ import { faqs } from "@/content/faqs";
 
 export function FaqPreview() {
   return (
-    <Section id="faq" title="Quick answers">
+    <Section
+      id="faq"
+      deferRender
+      title={<>Quick <span className="accent-serif">answers</span></>}
+    >
       <div className="max-w-3xl">
         <FaqList items={faqs.slice(0, 3)} />
       </div>
